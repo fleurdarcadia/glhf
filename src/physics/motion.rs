@@ -18,18 +18,6 @@ pub enum Direction {
 /// Represents directional motion in some specified units.
 pub struct Velocity<U>(f32, PhantomData<U>);
 
-impl Direction {
-    pub fn from_key_code(key_code: KeyCode) -> Option<Self> {
-        match key_code {
-            KeyCode::Up    => Some(Direction::Up),
-            KeyCode::Down  => Some(Direction::Down),
-            KeyCode::Left  => Some(Direction::Left),
-            KeyCode::Right => Some(Direction::Right),
-            _              => None,
-        }
-    }
-}
-
 impl Velocity<units::PixelsPerMs> {
     pub fn horizontal(direction: &Direction) -> Self {
         match direction {
