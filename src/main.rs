@@ -1,5 +1,6 @@
 mod config;
 mod game;
+mod physics;
 
 use game::{
     state::State,
