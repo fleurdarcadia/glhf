@@ -37,9 +37,9 @@ impl Player {
     /// Reposition the player in some direction.
     /// The player's velocity is an inherent characteristic, however the time since
     /// the last tick must be taken into account to compute distance.
-    pub fn reposition(&mut self, dir: motion::Direction, time: Duration) {
-        self.x += motion::Velocity::horizontal(&dir).distance(time).0;
-        self.y += motion::Velocity::vertical(&dir).distance(time).0;
+    pub fn reposition(&mut self, dir: &motion::Direction, time: Duration) {
+        self.x += motion::Velocity::horizontal(dir).distance(time).0;
+        self.y += motion::Velocity::vertical(dir).distance(time).0;
     }
 
     pub fn draw(&mut self, ctx: &mut Context) -> GameResult {
