@@ -22,10 +22,9 @@ use ggez::{
 
 /// The player's state.
 pub struct Player {
-    x: f32,
-    y: f32,
-    width: f32,
-    height: f32,
+    pub position: motion::Position<units::Pixels>,
+    pub width: f32,
+    pub height: f32,
 }
 
 /// The various actions the player can take.
@@ -37,8 +36,10 @@ pub enum Action {
 impl Player {
     pub fn new(ui: &UI) -> Self {
         Player {
-            x: ui.width / 2.0 - 12.0,
-            y: ui.height - 64.0,
+            position: motion::Position(
+                  units::Pixels(ui.width / 2.0 - 12.0),
+                  units::Pixels(ui.height - 64.0)
+            ),
             width: 24.0,
             height: 32.0,
         }
@@ -46,8 +47,8 @@ impl Player {
 
     pub fn draw(&mut self, ctx: &mut Context) -> GameResult {
         let position = graphics::Rect::new(
-            self.x,
-            self.y,
+            self.position.0.0,
+            self.position.1.0,
             self.width,
             self.height,
         );
@@ -68,12 +69,13 @@ impl Player {
     /// The player's velocity is an inherent characteristic, however the time since
     /// the last tick must be taken into account to compute distance.
     pub fn reposition(&mut self, dir: motion::Direction, time: Duration) {
-        self.x += Player::horizontal_velocity(dir, time).distance(time).0;
-        self.y += Player::vertical_velocity(dir, time).distance(time).0;
-    }
+        let dx = Player::horizontal_velocity(dir, time).distance(time).0;
+        let dy = Player::vertical_velocity(dir, time).distance(time).0;
 
-    pub fn position(&self) -> motion::Position<units::Pixels> {
-        motion::Position(units::Pixels(self.x), units::Pixels(self.y))
+        self.position = motion::Position(
+            units::Pixels(self.position.0.0 + dx),
+            units::Pixels(self.position.1.0 + dy),
+        );
     }
 }
 
