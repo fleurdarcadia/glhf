@@ -3,6 +3,7 @@ use crate::{
     physics::motion::{
         self,
         Acceleration,
+        Object,
     },
     physics::units,
 };
@@ -23,8 +24,7 @@ use ggez::{
 /// The player's state.
 pub struct Player {
     pub position: motion::Position<units::Pixels>,
-    pub width: f32,
-    pub height: f32,
+    pub dimensions: motion::Dimensions<units::Pixels>,
 }
 
 /// The various actions the player can take.
@@ -40,8 +40,10 @@ impl Player {
                   units::Pixels(ui.width / 2.0 - 12.0),
                   units::Pixels(ui.height - 64.0)
             ),
-            width: 24.0,
-            height: 32.0,
+            dimensions: motion::Dimensions::new(
+                units::Pixels(24.0),
+                units::Pixels(32.0)
+            ),
         }
     }
 
@@ -49,8 +51,8 @@ impl Player {
         let position = graphics::Rect::new(
             self.position.x.value(),
             self.position.y.value(),
-            self.width,
-            self.height,
+            self.dimensions.width.value(),
+            self.dimensions.height.value(),
         );
  
         let player_rect = graphics::Mesh::new_rectangle(

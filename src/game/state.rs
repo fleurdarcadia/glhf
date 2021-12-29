@@ -43,8 +43,8 @@ impl State {
     }
 
     pub fn position_player_in_game_space(&mut self) {
-        let max_x = self.ui.width - self.player.width;
-        let max_y = self.ui.height - self.player.height;
+        let max_x = self.ui.width - self.player.dimensions.width.value();
+        let max_y = self.ui.height - self.player.dimensions.height.value();
 
         let new_x = if self.player.position.x.value() < 0.0 {
             0.0

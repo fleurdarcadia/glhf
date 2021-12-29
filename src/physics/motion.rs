@@ -16,6 +16,12 @@ pub struct Position<U: Copy>{
     pub y: U,
 }
 
+#[derive(Copy, Clone)]
+pub struct Dimensions<U: Copy> {
+    pub width: U,
+    pub height: U,
+}
+
 /// An option-like representation of the directions of arrow keys.
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub enum Direction {
@@ -29,6 +35,11 @@ pub enum Direction {
 /// Represents directional motion in some specified units.
 pub struct Velocity<U>(f32, PhantomData<U>);
 
+pub trait Object<U: Copy> {
+    fn position(&self) -> Position<U>;
+    fn dimensions(&self) -> Dimensions<U>;
+}
+
 pub trait Acceleration<U> {
     fn horizontal_velocity(dir: Direction, time: Duration) -> Velocity<U>;
     fn vertical_velocity(dir: Direction, time: Duration) -> Velocity<U>;
@@ -39,6 +50,15 @@ impl<U: Copy> Position<U> {
         Position {
             x: x,
             y: y,
+        }
+    }
+}
+
+impl<U: Copy> Dimensions<U> {
+    pub fn new(width: U, height: U) -> Self {
+        Dimensions {
+            width: width,
+            height: height,
         }
     }
 }
