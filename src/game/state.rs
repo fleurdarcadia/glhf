@@ -1,3 +1,5 @@
+use std::collections::LinkedList;
+
 use crate::config::ui::UI;
 use crate::physics::motion;
 use super::player;
@@ -24,7 +26,7 @@ use ggez::{
 /// The main game state container.
 pub struct State {
     player: player::Player,
-    bullets: Vec<bullets::Bullet>,
+    bullets: LinkedList<bullets::Bullet>,
 
     input_queue: Vec<player::Action>,
     last_tick_time: DateTime<Utc>,
@@ -34,10 +36,16 @@ impl State {
     pub fn new(ui: &UI) -> Self {
         State {
             player: player::Player::new(ui),
-            bullets: vec![],
+            bullets: LinkedList::new(),
             input_queue: vec![],
             last_tick_time: Utc::now(),
         }
+    }
+
+    pub fn position_player_in_game_space(&mut self) {
+    }
+
+    pub fn cleanup_out_of_bounds_bullets(&mut self) {
     }
 }
 
@@ -57,7 +65,7 @@ impl EventHandler<GameError> for State {
                         self.player.position()
                     ));
 
-                    self.bullets.push(bullet);
+                    self.bullets.push_back(bullet);
                 }
             }
         }
