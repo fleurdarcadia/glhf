@@ -1,6 +1,7 @@
 use crate::config::ui::UI;
 use crate::physics::motion;
 use super::player;
+use super::bullets;
 
 use chrono::prelude::*;
 use chrono::offset::Utc;
@@ -23,6 +24,7 @@ use ggez::{
 /// The main game state container.
 pub struct State {
     player: player::Player,
+    bullets: Vec<bullets::Bullet>,
 
     input_queue: Vec<player::Action>,
     last_tick_time: DateTime<Utc>,
@@ -32,6 +34,7 @@ impl State {
     pub fn new(ui: &UI) -> Self {
         State {
             player: player::Player::new(ui),
+            bullets: vec![],
             input_queue: vec![],
             last_tick_time: Utc::now(),
         }
@@ -48,7 +51,7 @@ impl EventHandler<GameError> for State {
                 }
 
                 player::Action::Shoot => {
-                    //self.bullets.add(Bullets::Player(self.player.position()));
+                    self.bullets.push(bullets::Bullet::Player(self.player.position()));
                 }
             }
         }
@@ -64,6 +67,10 @@ impl EventHandler<GameError> for State {
         graphics::clear(ctx, Color::WHITE);
 
         self.player.draw(ctx)?;
+
+        for bullet in self.bullets.iter() {
+            bullet.draw(ctx)?;
+        }
 
         graphics::present(ctx)?;
         ggez::timer::yield_now();
