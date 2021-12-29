@@ -43,19 +43,30 @@ impl State {
 
 impl EventHandler<GameError> for State {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
+        let time_since_last_tick = Utc::now() - self.last_tick_time;
+
         // Process the entire input queue and then clear it.
         for input in self.input_queue.iter() {
             match input {
                 player::Action::Move(direction) => {
-                    self.player.reposition(*direction, Utc::now() - self.last_tick_time);
+                    self.player.reposition(*direction, time_since_last_tick);
                 }
 
                 player::Action::Shoot => {
-                    self.bullets.push(bullets::Bullet::Player(self.player.position()));
+                    let bullet = bullets::Bullet::Player(bullets::PlayerBullet::new(
+                        self.player.position()
+                    ));
+
+                    self.bullets.push(bullet);
                 }
             }
         }
 
+        for bullet in self.bullets.iter_mut() {
+            bullet.reposition(time_since_last_tick);
+        }
+
+        // Cleanup after updating everything
         self.input_queue = vec![];
 
         self.last_tick_time = Utc::now();

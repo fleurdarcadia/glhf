@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 
 use crate::{
+    game::bullets::PlayerBullet,
     game::player::Player,
     physics::units,
 };
@@ -9,7 +10,8 @@ use chrono::Duration;
 use ggez::event::KeyCode;
 
 
-pub struct Position<U>(pub U, pub U);
+#[derive(Copy, Clone)]
+pub struct Position<U: Copy>(pub U, pub U);
 
 /// An option-like representation of the directions of arrow keys.
 #[derive(Copy, Clone, PartialEq, Eq)]
@@ -44,6 +46,16 @@ impl Acceleration<units::PixelsPerMs> for Player {
             Direction::Down => Velocity(0.5, PhantomData),
             _               => Velocity(0.0, PhantomData),
         }
+    }
+}
+
+impl Acceleration<units::PixelsPerMs> for PlayerBullet {
+    fn horizontal_velocity(direction: Direction, _time: Duration) -> Velocity<units::PixelsPerMs> {
+        Velocity(0.0, PhantomData)
+    }
+
+    fn vertical_velocity(direction: Direction, _time: Duration) -> Velocity<units::PixelsPerMs> {
+        Velocity(-2.0, PhantomData)
     }
 }
 
