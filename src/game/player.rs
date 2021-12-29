@@ -1,5 +1,11 @@
-use crate::config::ui::UI;
-use crate::physics::motion;
+use crate::{
+    config::ui::UI,
+    physics::motion::{
+        self,
+        Acceleration,
+    },
+    physics::units,
+};
 
 use chrono::prelude::*;
 use chrono::Duration;
@@ -61,9 +67,13 @@ impl Player {
     /// Reposition the player in some direction.
     /// The player's velocity is an inherent characteristic, however the time since
     /// the last tick must be taken into account to compute distance.
-    pub fn reposition(&mut self, dir: &motion::Direction, time: Duration) {
-        self.x += motion::Velocity::horizontal(dir).distance(time).0;
-        self.y += motion::Velocity::vertical(dir).distance(time).0;
+    pub fn reposition(&mut self, dir: motion::Direction, time: Duration) {
+        self.x += Player::horizontal_velocity(dir, time).distance(time).0;
+        self.y += Player::vertical_velocity(dir, time).distance(time).0;
+    }
+
+    pub fn position(&self) -> motion::Position<units::Pixels> {
+        motion::Position(units::Pixels(self.x), units::Pixels(self.y))
     }
 }
 

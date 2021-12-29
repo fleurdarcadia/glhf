@@ -44,10 +44,12 @@ impl EventHandler<GameError> for State {
         for input in self.input_queue.iter() {
             match input {
                 player::Action::Move(direction) => {
-                    self.player.reposition(direction, Utc::now() - self.last_tick_time);
+                    self.player.reposition(*direction, Utc::now() - self.last_tick_time);
                 }
 
-                _ => {},
+                player::Action::Shoot => {
+                    //self.bullets.add(Bullets::Player(self.player.position()));
+                }
             }
         }
 
