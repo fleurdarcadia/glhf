@@ -21,7 +21,7 @@ fn main() -> ggez::GameResult {
         .window_mode(ggez::conf::WindowMode::default().dimensions(config.width, config.height))
         .build()?;
 
-    let state = State::new(&config);
+    let state = State::new(config);
 
     ggez::event::run(ctx, events_loop, state);
 }

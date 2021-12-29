@@ -1,3 +1,6 @@
+use ggez::graphics;
+
+
 /// Configuration options for the game UI.
 pub struct UI {
     pub width: f32,
@@ -10,6 +13,10 @@ impl UI {
             width: width,
             height: height,
         }
+    }
+    
+    pub fn hitbox_rect(&self) -> graphics::Rect {
+        graphics::Rect::new(0.0, 0.0, self.width, self.height)
     }
 }
 

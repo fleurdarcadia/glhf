@@ -1,5 +1,3 @@
-use std::collections::LinkedList;
-
 use crate::config::ui::UI;
 use crate::physics::motion;
 use super::player;
@@ -26,19 +24,21 @@ use ggez::{
 /// The main game state container.
 pub struct State {
     player: player::Player,
-    bullets: LinkedList<bullets::Bullet>,
+    bullets: Vec<bullets::Bullet>,
 
     input_queue: Vec<player::Action>,
     last_tick_time: DateTime<Utc>,
+    ui: UI,
 }
 
 impl State {
-    pub fn new(ui: &UI) -> Self {
+    pub fn new(ui: UI) -> Self {
         State {
-            player: player::Player::new(ui),
-            bullets: LinkedList::new(),
+            player: player::Player::new(&ui),
+            bullets: vec![],
             input_queue: vec![],
             last_tick_time: Utc::now(),
+            ui: ui,
         }
     }
 
@@ -46,6 +46,17 @@ impl State {
     }
 
     pub fn cleanup_out_of_bounds_bullets(&mut self) {
+        let ui_rect = self.ui.hitbox_rect();
+
+        let mut remaining_bullets: Vec<bullets::Bullet> = vec![];
+
+        for bullet in self.bullets.iter() {
+            if bullet.hitbox_rect().overlaps(&ui_rect) {
+                remaining_bullets.push(bullet.clone());
+            }
+        }
+
+        self.bullets = remaining_bullets;
     }
 }
 
@@ -65,7 +76,7 @@ impl EventHandler<GameError> for State {
                         self.player.position()
                     ));
 
-                    self.bullets.push_back(bullet);
+                    self.bullets.push(bullet);
                 }
             }
         }
@@ -76,6 +87,7 @@ impl EventHandler<GameError> for State {
 
         // Cleanup after updating everything
         self.input_queue = vec![];
+        self.cleanup_out_of_bounds_bullets();
 
         self.last_tick_time = Utc::now();
 

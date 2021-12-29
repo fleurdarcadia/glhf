@@ -13,10 +13,12 @@ use ggez::{
     GameResult,
 };
 
+#[derive(Clone)]
 pub struct PlayerBullet {
     pub position: motion::Position<units::Pixels>,
 }
 
+#[derive(Clone)]
 pub enum Bullet {
     Player(PlayerBullet),
 }
@@ -25,6 +27,20 @@ impl Bullet {
     pub fn reposition(&mut self, time: Duration) {
         match self {
             Bullet::Player(bullet) => bullet.reposition(time),
+        }
+    }
+
+    pub fn position(&self) -> motion::Position<units::Pixels> {
+        match self {
+            Bullet::Player(PlayerBullet{ position }) => position.clone(),
+        }
+    }
+
+    pub fn hitbox_rect(&self) -> graphics::Rect {
+        let pos = self.position();
+
+        match self {
+            Bullet::Player(_) => graphics::Rect::new(pos.0.0, pos.1.0, 20.0, 20.0),
         }
     }
 
