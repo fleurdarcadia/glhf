@@ -36,7 +36,7 @@ pub enum Action {
 impl Player {
     pub fn new(ui: &UI) -> Self {
         Player {
-            position: motion::Position(
+            position: motion::Position::new(
                   units::Pixels(ui.width / 2.0 - 12.0),
                   units::Pixels(ui.height - 64.0)
             ),
@@ -47,8 +47,8 @@ impl Player {
 
     pub fn draw(&mut self, ctx: &mut Context) -> GameResult {
         let position = graphics::Rect::new(
-            self.position.0.0,
-            self.position.1.0,
+            self.position.x.value(),
+            self.position.y.value(),
             self.width,
             self.height,
         );
@@ -72,9 +72,9 @@ impl Player {
         let dx = Player::horizontal_velocity(dir, time).distance(time).0;
         let dy = Player::vertical_velocity(dir, time).distance(time).0;
 
-        self.position = motion::Position(
-            units::Pixels(self.position.0.0 + dx),
-            units::Pixels(self.position.1.0 + dy),
+        self.position = motion::Position::new(
+            units::Pixels(self.position.x.value() + dx),
+            units::Pixels(self.position.y.value() + dy),
         );
     }
 }

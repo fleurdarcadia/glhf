@@ -11,7 +11,10 @@ use ggez::event::KeyCode;
 
 
 #[derive(Copy, Clone)]
-pub struct Position<U: Copy>(pub U, pub U);
+pub struct Position<U: Copy>{
+    pub x: U,
+    pub y: U,
+}
 
 /// An option-like representation of the directions of arrow keys.
 #[derive(Copy, Clone, PartialEq, Eq)]
@@ -29,6 +32,15 @@ pub struct Velocity<U>(f32, PhantomData<U>);
 pub trait Acceleration<U> {
     fn horizontal_velocity(dir: Direction, time: Duration) -> Velocity<U>;
     fn vertical_velocity(dir: Direction, time: Duration) -> Velocity<U>;
+}
+
+impl<U: Copy> Position<U> {
+    pub fn new(x: U, y: U) -> Self {
+        Position {
+            x: x,
+            y: y,
+        }
+    }
 }
 
 impl Acceleration<units::PixelsPerMs> for Player {

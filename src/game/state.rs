@@ -46,23 +46,23 @@ impl State {
         let max_x = self.ui.width - self.player.width;
         let max_y = self.ui.height - self.player.height;
 
-        let new_x = if self.player.position.0.0 < 0.0 {
+        let new_x = if self.player.position.x.value() < 0.0 {
             0.0
-        } else if self.player.position.0.0 > max_x {
+        } else if self.player.position.x.value() > max_x {
             max_x
         } else {
-            self.player.position.0.0
+            self.player.position.x.value()
         };
 
-        let new_y = if self.player.position.1.0 < 0.0 {
+        let new_y = if self.player.position.y.value() < 0.0 {
             0.0
-        } else if self.player.position.1.0 > max_y {
+        } else if self.player.position.y.value() > max_y {
             max_y
         } else {
-            self.player.position.1.0
+            self.player.position.y.value()
         };
 
-        self.player.position = motion::Position(units::Pixels(new_x), units::Pixels(new_y));
+        self.player.position = motion::Position::new(units::Pixels(new_x), units::Pixels(new_y));
     }
 
     pub fn cleanup_out_of_bounds_bullets(&mut self) {

@@ -40,14 +40,14 @@ impl Bullet {
         let pos = self.position();
 
         match self {
-            Bullet::Player(_) => graphics::Rect::new(pos.0.0, pos.1.0, 20.0, 20.0),
+            Bullet::Player(_) => graphics::Rect::new(pos.x.value(), pos.y.value(), 20.0, 20.0),
         }
     }
 
     pub fn draw(&self, ctx: &mut Context) -> GameResult {
         let position = match self {
             Bullet::Player(PlayerBullet{ position }) =>
-                graphics::Rect::new(position.0.0, position.1.0, 20.0, 20.0),
+                graphics::Rect::new(position.x.value(), position.y.value(), 20.0, 20.0),
         };
 
         let bullet_rect = graphics::Mesh::new_rectangle(
@@ -74,9 +74,9 @@ impl PlayerBullet {
         let dx = Self::horizontal_velocity(motion::Direction::Up, time).distance(time).0;
         let dy = Self::vertical_velocity(motion::Direction::Stationary, time).distance(time).0;
 
-        self.position = motion::Position(
-            units::Pixels(self.position.0.0 + dx),
-            units::Pixels(self.position.1.0 + dy),
+        self.position = motion::Position::new(
+            units::Pixels(self.position.x.value() + dx),
+            units::Pixels(self.position.y.value() + dy),
         );
     }
 }
