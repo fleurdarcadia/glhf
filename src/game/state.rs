@@ -116,6 +116,12 @@ impl EventHandler<GameError> for State {
             }
         }
 
+        for enemy in self.enemies.iter_mut() {
+            if let Some(bullet) = enemy.fire_bullet() {
+                self.bullets.push(bullet);
+            }
+        }
+
         for bullet in self.bullets.iter_mut() {
             bullet.reposition(time_since_last_tick);
         }
