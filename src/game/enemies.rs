@@ -1,6 +1,7 @@
 use crate::{
     game::{
         bullets,
+        health::{Health, HealthPoints},
     },
     physics::{
         motion,
@@ -23,7 +24,8 @@ use ggez::{
 pub struct Enemy {
     pub position: motion::Position<units::Pixels>,
     pub dimensions: motion::Dimensions<units::Pixels>,
-    
+   
+    health: HealthPoints,
     bullet_rotation: Vec<bullets::Bullet>,
     current_bullet_index: usize,
     last_fired: DateTime<Utc>,
@@ -33,11 +35,13 @@ impl Enemy {
     pub fn new(
         pos: motion::Position<units::Pixels>,
         dim: motion::Dimensions<units::Pixels>,
+        health: HealthPoints,
         bullets: Vec<bullets::Bullet>,
     ) -> Self {
         Enemy {
             position: pos,
             dimensions: dim,
+            health: health,
             bullet_rotation: bullets,
             current_bullet_index: 0usize,
             last_fired: Utc::now(),
@@ -77,5 +81,21 @@ impl Enemy {
         graphics::draw(ctx, &enemy_rect, (ggez::mint::Point2 { x: 0.0, y: 0.0 },))?;
 
         Ok(())
+    }
+}
+
+impl Health for Enemy {
+    fn health(&self) -> HealthPoints {
+        self.health
+    }
+
+    fn restore_health(&mut self, _amt: HealthPoints) -> HealthPoints {
+        // Enemies cannot heal
+        self.health
+    }
+
+    fn take_damage(&mut self, amount: HealthPoints) -> HealthPoints {
+        self.health = self.health - amount;
+        self.health
     }
 }

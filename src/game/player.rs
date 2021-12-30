@@ -1,5 +1,6 @@
 use crate::{
     config::ui::UI,
+    game::health::{Health, HealthPoints},
     physics::motion::{
         self,
         Acceleration,
@@ -25,6 +26,8 @@ use ggez::{
 pub struct Player {
     pub position: motion::Position<units::Pixels>,
     pub dimensions: motion::Dimensions<units::Pixels>,
+
+    health: HealthPoints
 }
 
 /// The various actions the player can take.
@@ -44,6 +47,7 @@ impl Player {
                 units::Pixels(24.0),
                 units::Pixels(32.0)
             ),
+            health: HealthPoints::new(250),
         }
     }
 
@@ -78,6 +82,22 @@ impl Player {
             units::Pixels(self.position.x.value() + dx),
             units::Pixels(self.position.y.value() + dy),
         );
+    }
+}
+
+impl Health for Player {
+    fn health(&self) -> HealthPoints {
+        self.health
+    }
+
+    fn restore_health(&mut self, amount: HealthPoints) -> HealthPoints {
+        self.health = self.health - amount;
+        self.health
+    }
+
+    fn take_damage(&mut self, amount: HealthPoints) -> HealthPoints {
+        self.health = self.health - amount;
+        self.health
     }
 }
 
