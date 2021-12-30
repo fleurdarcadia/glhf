@@ -36,7 +36,11 @@ impl State {
         let tmp_default_enemy = enemies::Enemy::new(
             motion::Position::new(units::Pixels(300.0), units::Pixels(20.0)),
             motion::Dimensions::new(units::Pixels(32.0), units::Pixels(44.0)),
-            vec![],
+            vec![
+                bullets::Bullet::EnemyBasic(bullets::Basic::new(
+                    motion::Position::new(units::Pixels(316.0), units::Pixels(64.0)),
+                ))
+            ],
         );
 
         State {

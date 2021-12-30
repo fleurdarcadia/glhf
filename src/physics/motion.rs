@@ -1,7 +1,10 @@
 use std::marker::PhantomData;
 
 use crate::{
-    game::bullets::PlayerBullet,
+    game::bullets::{
+        self,
+        PlayerBullet,
+    },
     game::player::Player,
     physics::units,
 };
@@ -88,6 +91,16 @@ impl Acceleration<units::PixelsPerMs> for PlayerBullet {
 
     fn vertical_velocity(direction: Direction, _time: Duration) -> Velocity<units::PixelsPerMs> {
         Velocity(-2.0, PhantomData)
+    }
+}
+
+impl Acceleration<units::PixelsPerMs> for bullets::Basic {
+    fn horizontal_velocity(direction: Direction, _time: Duration) -> Velocity<units::PixelsPerMs> {
+        Velocity(0.0, PhantomData)
+    }
+
+    fn vertical_velocity(direction: Direction, _time: Duration) -> Velocity<units::PixelsPerMs> {
+        Velocity(0.5, PhantomData)
     }
 }
 
