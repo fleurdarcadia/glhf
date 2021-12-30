@@ -1,7 +1,6 @@
 use crate::config::ui::UI;
 use crate::physics::{motion, units};
-use super::player;
-use super::bullets;
+use super::{bullets, enemies, player};
 
 use chrono::prelude::*;
 use chrono::offset::Utc;
@@ -24,6 +23,7 @@ use ggez::{
 /// The main game state container.
 pub struct State {
     player: player::Player,
+    enemies: Vec<enemies::Enemy>,
     bullets: Vec<bullets::Bullet>,
 
     input_queue: Vec<player::Action>,
@@ -33,13 +33,24 @@ pub struct State {
 
 impl State {
     pub fn new(ui: UI) -> Self {
+        let tmp_default_enemy = enemies::Enemy::new(
+            motion::Position::new(units::Pixels(300.0), units::Pixels(20.0)),
+            motion::Dimensions::new(units::Pixels(32.0), units::Pixels(44.0)),
+            vec![],
+        );
+
         State {
             player: player::Player::new(&ui),
+            enemies: vec![tmp_default_enemy],
             bullets: vec![],
             input_queue: vec![],
             last_tick_time: Utc::now(),
             ui: ui,
         }
+    }
+
+    pub fn add_enemy(&mut self, enemy: enemies::Enemy) {
+        self.enemies.push(enemy);
     }
 
     pub fn position_player_in_game_space(&mut self) {
@@ -119,6 +130,10 @@ impl EventHandler<GameError> for State {
         graphics::clear(ctx, Color::WHITE);
 
         self.player.draw(ctx)?;
+
+        for enemy in self.enemies.iter() {
+            enemy.draw(ctx)?;
+        }
 
         for bullet in self.bullets.iter() {
             bullet.draw(ctx)?;
