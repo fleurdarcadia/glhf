@@ -75,8 +75,8 @@ impl Player {
     /// The player's velocity is an inherent characteristic, however the time since
     /// the last tick must be taken into account to compute distance.
     pub fn reposition(&mut self, dir: motion::Direction, time: Duration) {
-        let dx = Player::horizontal_velocity(dir, time).distance(time).0;
-        let dy = Player::vertical_velocity(dir, time).distance(time).0;
+        let dx = self.horizontal_velocity(time).distance(time).0;
+        let dy = self.vertical_velocity(time).distance(time).0;
 
         self.position = motion::Position::new(
             units::Pixels(self.position.x.value() + dx),
@@ -107,6 +107,16 @@ impl Health for Player {
     fn take_damage(&mut self, amount: HealthPoints) -> HealthPoints {
         self.health = self.health - amount;
         self.health
+    }
+}
+
+impl Acceleration<units::PixelsPerMs> for Player {
+    fn horizontal_velocity(&self, time: Duration) -> motion::Velocity<units::PixelsPerMs> {
+        motion::Velocity::new(0.0)
+    }
+    
+    fn vertical_velocity(&self, time: Duration) -> motion::Velocity<units::PixelsPerMs> {
+        motion::Velocity::new(0.0)
     }
 }
 

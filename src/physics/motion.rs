@@ -1,13 +1,6 @@
 use std::marker::PhantomData;
 
-use crate::{
-    game::bullets::{
-        self,
-        PlayerBullet,
-    },
-    game::player::Player,
-    physics::units,
-};
+use super::units;
 
 use chrono::Duration;
 use ggez::event::KeyCode;
@@ -44,8 +37,20 @@ pub trait Object<U: Copy> {
 }
 
 pub trait Acceleration<U> {
-    fn horizontal_velocity(dir: Direction, time: Duration) -> Velocity<U>;
-    fn vertical_velocity(dir: Direction, time: Duration) -> Velocity<U>;
+    fn horizontal_velocity(&self, time: Duration) -> Velocity<U>;
+    fn vertical_velocity(&self, time: Duration) -> Velocity<U>;
+}
+
+impl<U: Copy> Velocity<U> {
+    pub fn new(value: f32) -> Self {
+        Velocity(value, PhantomData)
+    }
+}
+
+impl Velocity<units::PixelsPerMs> {
+    pub fn distance(&self, time: Duration) -> units::Pixels {
+        units::Pixels(self.0 * time.num_milliseconds() as f32)
+    }
 }
 
 impl<U: Copy> Position<U> {
@@ -63,49 +68,5 @@ impl<U: Copy> Dimensions<U> {
             width: width,
             height: height,
         }
-    }
-}
-
-impl Acceleration<units::PixelsPerMs> for Player {
-    fn horizontal_velocity(direction: Direction, _time: Duration) -> Velocity<units::PixelsPerMs> {
-        match direction {
-            Direction::Left  => Velocity(-0.5, PhantomData),
-            Direction::Right => Velocity(0.5, PhantomData),
-            _                => Velocity(0.0, PhantomData),
-        }
-    }
-
-    fn vertical_velocity(direction: Direction, _time: Duration) -> Velocity<units::PixelsPerMs> {
-        match direction {
-            Direction::Up   => Velocity(-0.5, PhantomData),
-            Direction::Down => Velocity(0.5, PhantomData),
-            _               => Velocity(0.0, PhantomData),
-        }
-    }
-}
-
-impl Acceleration<units::PixelsPerMs> for PlayerBullet {
-    fn horizontal_velocity(direction: Direction, _time: Duration) -> Velocity<units::PixelsPerMs> {
-        Velocity(0.0, PhantomData)
-    }
-
-    fn vertical_velocity(direction: Direction, _time: Duration) -> Velocity<units::PixelsPerMs> {
-        Velocity(-2.0, PhantomData)
-    }
-}
-
-impl Acceleration<units::PixelsPerMs> for bullets::Basic {
-    fn horizontal_velocity(direction: Direction, _time: Duration) -> Velocity<units::PixelsPerMs> {
-        Velocity(0.0, PhantomData)
-    }
-
-    fn vertical_velocity(direction: Direction, _time: Duration) -> Velocity<units::PixelsPerMs> {
-        Velocity(0.5, PhantomData)
-    }
-}
-
-impl Velocity<units::PixelsPerMs> {
-    pub fn distance(&self, time_passed: Duration) -> units::Pixels {
-        units::Pixels(self.0 * time_passed.num_milliseconds() as f32)
     }
 }

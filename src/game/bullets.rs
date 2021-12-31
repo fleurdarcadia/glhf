@@ -15,13 +15,13 @@ use ggez::{
 };
 
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Owner {
     Player,
     Enemy,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Kind {
     Basic,
 }
@@ -61,8 +61,8 @@ impl Bullet {
     }
     
     pub fn reposition(&mut self, time: Duration) {
-        let dx = Self::horizontal_velocity(motion::Direction::Stationary, time).distance(time).0;
-        let dy = Self::vertical_velocity(motion::Direction::Down, time).distance(time).0;
+        let dx = self.horizontal_velocity(time).distance(time).0;
+        let dy = self.vertical_velocity(time).distance(time).0;
 
         self.position = motion::Position::new(
             units::Pixels(self.position.x.value() + dx),
@@ -108,3 +108,12 @@ impl Kind {
     }
 }
 
+impl Acceleration<units::PixelsPerMs> for Bullet {
+    fn horizontal_velocity(&self, time: Duration) -> motion::Velocity<units::PixelsPerMs> {
+        motion::Velocity::new(0.0)
+    }
+
+    fn vertical_velocity(&self, time: Duration) -> motion::Velocity<units::PixelsPerMs> {
+        motion::Velocity::new(0.5)
+    }
+}
