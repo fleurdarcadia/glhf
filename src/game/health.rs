@@ -2,7 +2,7 @@ use std::cmp;
 use std::ops::{Add, Sub};
 
 
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct HealthPoints {
     current: u32,
     maximum: u32,

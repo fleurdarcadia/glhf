@@ -1,6 +1,20 @@
-use crate::config::ui::UI;
-use crate::physics::{motion, units};
-use super::{health, bullets, enemies, player};
+use crate::{
+    config::ui::UI,
+    game::{
+        bullets,
+        enemies,
+        health::{
+            self,
+            Health,
+        },
+        player,
+    },
+    physics::{
+        motion,
+        units,
+    },
+};
+
 
 use chrono::prelude::*;
 use chrono::offset::Utc;
@@ -118,6 +132,22 @@ impl EventHandler<GameError> for State {
         }
 
         for enemy in self.enemies.iter_mut() {
+            let hitbox = enemy.hitbox_rect();
+
+            println!("Enemy health: {:?}", enemy.health());
+
+            for bullet in self.bullets.iter() {
+                if let bullets::Bullet::Player(b) = bullet {
+                    if b.hitbox_rect().overlaps(&hitbox) {
+                        enemy.take_damage(b.damage());
+                    }
+                }
+            }
+
+            if enemy.health().empty() {
+                continue;
+            }
+
             if let Some(bullet) = enemy.fire_bullet() {
                 self.bullets.push(bullet);
             }

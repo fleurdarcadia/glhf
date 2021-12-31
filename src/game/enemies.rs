@@ -48,6 +48,15 @@ impl Enemy {
         }
     }
 
+    pub fn hitbox_rect(&self) -> graphics::Rect {
+        graphics::Rect::new(
+            self.position.x.value(),
+            self.position.y.value(),
+            self.dimensions.width.value(),
+            self.dimensions.height.value(),
+        )
+    }
+
     pub fn fire_bullet(&mut self) -> Option<bullets::Bullet> {
         let time_since_last_update = Utc::now() - self.last_fired;
 

@@ -1,4 +1,5 @@
 use crate::{
+    game::health::HealthPoints,
     physics::motion::{
         self,
         Acceleration,
@@ -71,6 +72,19 @@ impl PlayerBullet {
         PlayerBullet {
             position: position,
         }
+    }
+
+    pub fn damage(&self) -> HealthPoints {
+        HealthPoints::new(10)
+    }
+
+    pub fn hitbox_rect(&self) -> graphics::Rect {
+        graphics::Rect::new(
+            self.position.x.value(),
+            self.position.y.value(),
+            20.0,
+            20.0,
+        )
     }
 
     pub fn reposition(&mut self, time: Duration) {
