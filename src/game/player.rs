@@ -1,11 +1,7 @@
 use crate::{
     config::ui::UI,
     game::health::{Health, HealthPoints},
-    physics::motion::{
-        self,
-        Acceleration,
-        Object,
-    },
+    physics::motion::*,
     physics::units,
 };
 
@@ -24,29 +20,31 @@ use ggez::{
 
 /// The player's state.
 pub struct Player {
-    pub position: motion::Position<units::Pixels>,
-    pub dimensions: motion::Dimensions<units::Pixels>,
+    pub position: Position<units::Pixels>,
+    pub dimensions: Dimensions<units::Pixels>,
 
+    movement_direction: Direction,
     health: HealthPoints
 }
 
 /// The various actions the player can take.
 pub enum Action {
-    Move(motion::Direction),
+    Move(Direction),
     Shoot,
 }
 
 impl Player {
     pub fn new(ui: &UI) -> Self {
         Player {
-            position: motion::Position::new(
+            position: Position::new(
                   units::Pixels(ui.width / 2.0 - 12.0),
                   units::Pixels(ui.height - 64.0)
             ),
-            dimensions: motion::Dimensions::new(
+            dimensions: Dimensions::new(
                 units::Pixels(24.0),
                 units::Pixels(32.0)
             ),
+            movement_direction: Direction::Stationary,
             health: HealthPoints::new(250),
         }
     }
@@ -74,11 +72,13 @@ impl Player {
     /// Reposition the player in some direction.
     /// The player's velocity is an inherent characteristic, however the time since
     /// the last tick must be taken into account to compute distance.
-    pub fn reposition(&mut self, dir: motion::Direction, time: Duration) {
+    pub fn reposition(&mut self, dir: Direction, time: Duration) {
+        self.movement_direction = dir;
+
         let dx = self.horizontal_velocity(time).distance(time).0;
         let dy = self.vertical_velocity(time).distance(time).0;
 
-        self.position = motion::Position::new(
+        self.position = Position::new(
             units::Pixels(self.position.x.value() + dx),
             units::Pixels(self.position.y.value() + dy),
         );
@@ -111,22 +111,30 @@ impl Health for Player {
 }
 
 impl Acceleration<units::PixelsPerMs> for Player {
-    fn horizontal_velocity(&self, time: Duration) -> motion::Velocity<units::PixelsPerMs> {
-        motion::Velocity::new(0.0)
+    fn horizontal_velocity(&self, time: Duration) -> Velocity<units::PixelsPerMs> {
+        match self.movement_direction {
+            Direction::Right => Velocity::new(0.5),
+            Direction::Left  => Velocity::new(-0.5),
+            _                => Velocity::new(0.0),
+        }
     }
     
-    fn vertical_velocity(&self, time: Duration) -> motion::Velocity<units::PixelsPerMs> {
-        motion::Velocity::new(0.0)
+    fn vertical_velocity(&self, time: Duration) -> Velocity<units::PixelsPerMs> {
+        match self.movement_direction {
+            Direction::Down => Velocity::new(0.5),
+            Direction::Up   => Velocity::new(-0.5),
+            _               => Velocity::new(0.0),
+        }
     }
 }
 
 impl Action {
     pub fn from_key_code(key_code: KeyCode) -> Option<Self> {
         match key_code {
-            KeyCode::Up    => Some(Action::Move(motion::Direction::Up)),
-            KeyCode::Down  => Some(Action::Move(motion::Direction::Down)),
-            KeyCode::Left  => Some(Action::Move(motion::Direction::Left)),
-            KeyCode::Right => Some(Action::Move(motion::Direction::Right)),
+            KeyCode::Up    => Some(Action::Move(Direction::Up)),
+            KeyCode::Down  => Some(Action::Move(Direction::Down)),
+            KeyCode::Left  => Some(Action::Move(Direction::Left)),
+            KeyCode::Right => Some(Action::Move(Direction::Right)),
             KeyCode::Space => Some(Action::Shoot),
             _              => None,
         }

@@ -1,9 +1,6 @@
 use crate::{
     game::health::HealthPoints,
-    physics::motion::{
-        self,
-        Acceleration,
-    },
+    physics::motion::*,
     physics::units,
 };
 
@@ -30,15 +27,15 @@ pub enum Kind {
 pub struct Bullet {
     owner: Owner,
     kind: Kind,
-    position: motion::Position<units::Pixels>,
-    dimensions: motion::Dimensions<units::Pixels>,
+    position: Position<units::Pixels>,
+    dimensions: Dimensions<units::Pixels>,
 }
 
 impl Bullet {
     pub fn new(
         owner: Owner,
         kind: Kind,
-        position: motion::Position<units::Pixels>,
+        position: Position<units::Pixels>,
     ) -> Self {
         Bullet {
             owner: owner,
@@ -48,7 +45,7 @@ impl Bullet {
         }
     }
 
-    pub fn position(&self) -> motion::Position<units::Pixels> {
+    pub fn position(&self) -> Position<units::Pixels> {
         self.position
     }
 
@@ -64,7 +61,7 @@ impl Bullet {
         let dx = self.horizontal_velocity(time).distance(time).0;
         let dy = self.vertical_velocity(time).distance(time).0;
 
-        self.position = motion::Position::new(
+        self.position = Position::new(
             units::Pixels(self.position.x.value() + dx),
             units::Pixels(self.position.y.value() + dy),
         );
@@ -101,19 +98,23 @@ impl Bullet {
 }
 
 impl Kind {
-    pub fn dimensions(&self) -> motion::Dimensions<units::Pixels> {
+    pub fn dimensions(&self) -> Dimensions<units::Pixels> {
         match self {
-            Kind::Basic => motion::Dimensions::new(units::Pixels(20.0), units::Pixels(20.0)),
+            Kind::Basic => Dimensions::new(units::Pixels(20.0), units::Pixels(20.0)),
         }
     }
 }
 
 impl Acceleration<units::PixelsPerMs> for Bullet {
-    fn horizontal_velocity(&self, time: Duration) -> motion::Velocity<units::PixelsPerMs> {
-        motion::Velocity::new(0.0)
+    fn horizontal_velocity(&self, time: Duration) -> Velocity<units::PixelsPerMs> {
+        Velocity::new(0.0)
     }
 
-    fn vertical_velocity(&self, time: Duration) -> motion::Velocity<units::PixelsPerMs> {
-        motion::Velocity::new(0.5)
+    fn vertical_velocity(&self, time: Duration) -> Velocity<units::PixelsPerMs> {
+        match self.owner {
+            Owner::Enemy  => Velocity::new(0.5),
+            Owner::Player => Velocity::new(-2.0),
+        }
+        
     }
 }
