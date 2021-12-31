@@ -53,9 +53,11 @@ impl State {
             motion::Dimensions::new(units::Pixels(32.0), units::Pixels(44.0)),
             health::HealthPoints::new(100),
             vec![
-                bullets::Bullet::EnemyBasic(bullets::Basic::new(
+                bullets::Bullet::new(
+                    bullets::Owner::Enemy,
+                    bullets::Kind::Basic,
                     motion::Position::new(units::Pixels(316.0), units::Pixels(64.0)),
-                ))
+                ),
             ],
         );
 
@@ -81,9 +83,11 @@ impl State {
                 }
 
                 player::Action::Shoot => {
-                    let bullet = bullets::Bullet::Player(bullets::PlayerBullet::new(
-                        self.player.position
-                    ));
+                    let bullet = bullets::Bullet::new(
+                        bullets::Owner::Player,
+                        bullets::Kind::Basic,
+                        self.player.position,
+                    );
 
                     self.bullets.push(bullet);
                 }
@@ -100,11 +104,9 @@ impl State {
         let mut bullet_index = 0usize;
 
         for bullet in self.bullets.iter() {
-            if let bullets::Bullet::EnemyBasic(b) = bullet {
-                if bullet.hitbox_rect().overlaps(&hitbox) {
-                    self.player.take_damage(b.damage());
-                    spent_bullet_indices.push(bullet_index);
-                }
+            if bullet.owner() == bullets::Owner::Enemy && bullet.hitbox_rect().overlaps(&hitbox) {
+                self.player.take_damage(bullet.damage());
+                spent_bullet_indices.push(bullet_index);
             }
 
             bullet_index += 1;
@@ -121,11 +123,9 @@ impl State {
 
             let mut bullet_index = 0usize;
             for bullet in self.bullets.iter() {
-                if let bullets::Bullet::Player(b) = bullet {
-                    if bullet.hitbox_rect().overlaps(&hitbox) {
-                        enemy.take_damage(b.damage());
-                        spent_bullet_indices.push(bullet_index);
-                    }
+                if bullet.owner() == bullets::Owner::Player && bullet.hitbox_rect().overlaps(&hitbox) {
+                    enemy.take_damage(bullet.damage());
+                    spent_bullet_indices.push(bullet_index);
                 }
                 bullet_index += 1;
             }

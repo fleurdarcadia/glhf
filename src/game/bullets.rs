@@ -14,50 +14,83 @@ use ggez::{
     GameResult,
 };
 
-#[derive(Clone)]
-pub struct PlayerBullet {
-    pub position: motion::Position<units::Pixels>,
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Owner {
+    Player,
+    Enemy,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Kind {
+    Basic,
 }
 
 #[derive(Clone)]
-pub struct Basic {
-    pub position: motion::Position<units::Pixels>,
-}
-
-#[derive(Clone)]
-pub enum Bullet {
-    Player(PlayerBullet),
-    EnemyBasic(Basic),
+pub struct Bullet {
+    owner: Owner,
+    kind: Kind,
+    position: motion::Position<units::Pixels>,
+    dimensions: motion::Dimensions<units::Pixels>,
 }
 
 impl Bullet {
-    pub fn reposition(&mut self, time: Duration) {
-        match self {
-            Bullet::Player(bullet)     => bullet.reposition(time),
-            Bullet::EnemyBasic(bullet) => bullet.reposition(time),
+    pub fn new(
+        owner: Owner,
+        kind: Kind,
+        position: motion::Position<units::Pixels>,
+    ) -> Self {
+        Bullet {
+            owner: owner,
+            kind: kind,
+            position: position,
+            dimensions: kind.dimensions(),
         }
     }
 
     pub fn position(&self) -> motion::Position<units::Pixels> {
-        match self {
-            Bullet::Player(PlayerBullet{ position }) => position.clone(),
-            Bullet::EnemyBasic(Basic{ position })    => position.clone(),
-        }
+        self.position
+    }
+
+    pub fn owner(&self) -> Owner {
+        self.owner
+    }
+
+    pub fn kind(&self) -> Kind {
+        self.kind
+    }
+    
+    pub fn reposition(&mut self, time: Duration) {
+        let dx = Self::horizontal_velocity(motion::Direction::Stationary, time).distance(time).0;
+        let dy = Self::vertical_velocity(motion::Direction::Down, time).distance(time).0;
+
+        self.position = motion::Position::new(
+            units::Pixels(self.position.x.value() + dx),
+            units::Pixels(self.position.y.value() + dy),
+        );
     }
 
     pub fn hitbox_rect(&self) -> graphics::Rect {
-        let pos = self.position();
+        graphics::Rect::new(
+            self.position.x.value(),
+            self.position.y.value(),
+            self.dimensions.width.value(),
+            self.dimensions.height.value(),
+        )
+    }
 
-        graphics::Rect::new(pos.x.value(), pos.y.value(), 20.0, 20.0)
+    pub fn damage(&self) -> HealthPoints {
+        match (self.owner, self.kind) {
+            (Owner::Player, Kind::Basic) => HealthPoints::new(10),
+            (Owner::Enemy, Kind::Basic)  => HealthPoints::new(5),
+        }
     }
 
     pub fn draw(&self, ctx: &mut Context) -> GameResult {
-        let pos = self.position();
-        let rect = graphics::Rect::new(pos.x.value(), pos.y.value(), 20.0, 20.0);
         let bullet_rect = graphics::Mesh::new_rectangle(
             ctx,
             graphics::DrawMode::fill(),
-            rect,
+            self.hitbox_rect(),
             graphics::Color::BLUE,
         )?;
 
@@ -67,46 +100,11 @@ impl Bullet {
     }
 }
 
-impl PlayerBullet {
-    pub fn new(position: motion::Position<units::Pixels>) -> Self {
-        PlayerBullet {
-            position: position,
+impl Kind {
+    pub fn dimensions(&self) -> motion::Dimensions<units::Pixels> {
+        match self {
+            Kind::Basic => motion::Dimensions::new(units::Pixels(20.0), units::Pixels(20.0)),
         }
-    }
-
-    pub fn damage(&self) -> HealthPoints {
-        HealthPoints::new(10)
-    }
-
-    pub fn reposition(&mut self, time: Duration) {
-        let dx = Self::horizontal_velocity(motion::Direction::Up, time).distance(time).0;
-        let dy = Self::vertical_velocity(motion::Direction::Stationary, time).distance(time).0;
-
-        self.position = motion::Position::new(
-            units::Pixels(self.position.x.value() + dx),
-            units::Pixels(self.position.y.value() + dy),
-        );
     }
 }
 
-impl Basic {
-    pub fn new(position: motion::Position<units::Pixels>) -> Self {
-        Basic {
-            position: position,
-        }
-    }
-
-    pub fn damage(&self) -> HealthPoints {
-        HealthPoints::new(5)
-    }
-
-    pub fn reposition(&mut self, time: Duration) {
-        let dx = Self::horizontal_velocity(motion::Direction::Down, time).distance(time).0;
-        let dy = Self::vertical_velocity(motion::Direction::Stationary, time).distance(time).0;
-
-        self.position = motion::Position::new(
-            units::Pixels(self.position.x.value() + dx),
-            units::Pixels(self.position.y.value() + dy),
-        );
-    }
-}
