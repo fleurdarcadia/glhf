@@ -273,4 +273,15 @@ impl EventHandler<GameError> for State {
             self.input_queue.push(action);
         }
     }
+
+    fn key_up_event(
+        &mut self,
+        _ctx: &mut Context,
+        key_code: KeyCode,
+        _key_mods: KeyMods,
+    ) {
+        if let Some(action) = player::Action::from_key_code(key_code, player::KeyPress::Released) {
+            self.input_queue.push(action);
+        }
+    }
 }
