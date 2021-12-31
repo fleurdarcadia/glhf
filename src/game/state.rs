@@ -93,6 +93,26 @@ impl State {
         self.input_queue = vec![];
     }
 
+    pub fn connect_bullets_with_player(&mut self) -> Vec<usize> {
+        let hitbox = self.player.hitbox_rect();
+        
+        let mut spent_bullet_indices = vec![];
+        let mut bullet_index = 0usize;
+
+        for bullet in self.bullets.iter() {
+            if let bullets::Bullet::EnemyBasic(b) = bullet {
+                if bullet.hitbox_rect().overlaps(&hitbox) {
+                    self.player.take_damage(b.damage());
+                    spent_bullet_indices.push(bullet_index);
+                }
+            }
+
+            bullet_index += 1;
+        }
+
+        spent_bullet_indices
+    }
+
     pub fn connect_bullets_with_enemies(&mut self) -> Vec<usize> {
         let mut spent_bullet_indices = vec![];
 
@@ -102,7 +122,7 @@ impl State {
             let mut bullet_index = 0usize;
             for bullet in self.bullets.iter() {
                 if let bullets::Bullet::Player(b) = bullet {
-                    if b.hitbox_rect().overlaps(&hitbox) {
+                    if bullet.hitbox_rect().overlaps(&hitbox) {
                         enemy.take_damage(b.damage());
                         spent_bullet_indices.push(bullet_index);
                     }
@@ -208,6 +228,9 @@ impl EventHandler<GameError> for State {
 
         self.process_input_queue(time_since_last_tick);
         self.position_player_in_game_space();
+        let spent_bullet_indices = self.connect_bullets_with_player();
+        self.cleanup_spent_bullets(spent_bullet_indices);
+        println!("Player health: {:?}", self.player.health());
 
         let spent_bullet_indices = self.connect_bullets_with_enemies();
         self.cleanup_defeated_enemies();

@@ -83,6 +83,15 @@ impl Player {
             units::Pixels(self.position.y.value() + dy),
         );
     }
+
+    pub fn hitbox_rect(&self) -> graphics::Rect {
+        graphics::Rect::new(
+            self.position.x.value(),
+            self.position.y.value(),
+            self.dimensions.width.value(),
+            self.dimensions.height.value(),
+        )
+    }
 }
 
 impl Health for Player {

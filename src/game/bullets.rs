@@ -78,15 +78,6 @@ impl PlayerBullet {
         HealthPoints::new(10)
     }
 
-    pub fn hitbox_rect(&self) -> graphics::Rect {
-        graphics::Rect::new(
-            self.position.x.value(),
-            self.position.y.value(),
-            20.0,
-            20.0,
-        )
-    }
-
     pub fn reposition(&mut self, time: Duration) {
         let dx = Self::horizontal_velocity(motion::Direction::Up, time).distance(time).0;
         let dy = Self::vertical_velocity(motion::Direction::Stationary, time).distance(time).0;
@@ -103,6 +94,10 @@ impl Basic {
         Basic {
             position: position,
         }
+    }
+
+    pub fn damage(&self) -> HealthPoints {
+        HealthPoints::new(5)
     }
 
     pub fn reposition(&mut self, time: Duration) {
