@@ -95,6 +95,30 @@ impl State {
         self.player.position = motion::Position::new(units::Pixels(new_x), units::Pixels(new_y));
     }
 
+    pub fn cleanup_spent_bullets(&mut self, indices: Vec<usize>) {
+        let mut remaining_bullets: Vec<bullets::Bullet> = vec![];
+        let mut index = 0usize;
+
+        for bullet in self.bullets.iter() {
+            let mut should_include = true;
+
+            for excluded in indices.iter() {
+                if index == *excluded {
+                    should_include = false;
+                    break;
+                }
+            }
+
+            if should_include {
+                remaining_bullets.push(bullet.clone());
+            }
+
+            index += 1;
+        }
+
+        self.bullets = remaining_bullets;
+    }
+
     pub fn cleanup_out_of_bounds_bullets(&mut self) {
         let ui_rect = self.ui.hitbox_rect();
 
@@ -131,17 +155,20 @@ impl EventHandler<GameError> for State {
             }
         }
 
+        let mut spent_bullet_indices = vec![];
+
         for enemy in self.enemies.iter_mut() {
             let hitbox = enemy.hitbox_rect();
 
-            println!("Enemy health: {:?}", enemy.health());
-
+            let mut bullet_index = 0usize;
             for bullet in self.bullets.iter() {
                 if let bullets::Bullet::Player(b) = bullet {
                     if b.hitbox_rect().overlaps(&hitbox) {
                         enemy.take_damage(b.damage());
+                        spent_bullet_indices.push(bullet_index);
                     }
                 }
+                bullet_index += 1;
             }
 
             if enemy.health().empty() {
@@ -159,6 +186,7 @@ impl EventHandler<GameError> for State {
 
         // Cleanup after updating everything
         self.input_queue = vec![];
+        self.cleanup_spent_bullets(spent_bullet_indices);
         self.cleanup_out_of_bounds_bullets();
         self.position_player_in_game_space();
 
