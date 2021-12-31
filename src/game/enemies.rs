@@ -21,6 +21,7 @@ use ggez::{
 };
 
 
+#[derive(Clone)]
 pub struct Enemy {
     pub position: motion::Position<units::Pixels>,
     pub dimensions: motion::Dimensions<units::Pixels>,

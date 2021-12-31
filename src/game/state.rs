@@ -17,6 +17,7 @@ use crate::{
 
 
 use chrono::prelude::*;
+use chrono::Duration;
 use chrono::offset::Utc;
 
 use ggez::{
@@ -70,6 +71,73 @@ impl State {
 
     pub fn add_enemy(&mut self, enemy: enemies::Enemy) {
         self.enemies.push(enemy);
+    }
+
+    pub fn process_input_queue(&mut self, time_since_last_tick: Duration) {
+        for input in self.input_queue.iter() {
+            match input {
+                player::Action::Move(direction) => {
+                    self.player.reposition(*direction, time_since_last_tick);
+                }
+
+                player::Action::Shoot => {
+                    let bullet = bullets::Bullet::Player(bullets::PlayerBullet::new(
+                        self.player.position
+                    ));
+
+                    self.bullets.push(bullet);
+                }
+            }
+        }
+
+        self.input_queue = vec![];
+    }
+
+    pub fn connect_bullets_with_enemies(&mut self) -> Vec<usize> {
+        let mut spent_bullet_indices = vec![];
+
+        for enemy in self.enemies.iter_mut() {
+            let hitbox = enemy.hitbox_rect();
+
+            let mut bullet_index = 0usize;
+            for bullet in self.bullets.iter() {
+                if let bullets::Bullet::Player(b) = bullet {
+                    if b.hitbox_rect().overlaps(&hitbox) {
+                        enemy.take_damage(b.damage());
+                        spent_bullet_indices.push(bullet_index);
+                    }
+                }
+                bullet_index += 1;
+            }
+        }
+
+        spent_bullet_indices
+    }
+
+    pub fn cleanup_defeated_enemies(&mut self) {
+        let mut remaining_enemies = vec![];
+
+        for enemy in self.enemies.iter() {
+            if !enemy.health().empty() {
+                remaining_enemies.push(enemy.clone());
+            }
+        }
+
+        self.enemies = remaining_enemies;
+    }
+
+    pub fn trigger_enemy_behaviours(&mut self) {
+        for enemy in self.enemies.iter_mut() {
+            if let Some(bullet) = enemy.fire_bullet() {
+                self.bullets.push(bullet);
+            }
+        }
+    }
+
+    pub fn update_bullets(&mut self, time_since_last_tick: Duration) {
+        for bullet in self.bullets.iter_mut() {
+            bullet.reposition(time_since_last_tick);
+        }
     }
 
     pub fn position_player_in_game_space(&mut self) {
@@ -138,57 +206,16 @@ impl EventHandler<GameError> for State {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
         let time_since_last_tick = Utc::now() - self.last_tick_time;
 
-        // Process the entire input queue and then clear it.
-        for input in self.input_queue.iter() {
-            match input {
-                player::Action::Move(direction) => {
-                    self.player.reposition(*direction, time_since_last_tick);
-                }
-
-                player::Action::Shoot => {
-                    let bullet = bullets::Bullet::Player(bullets::PlayerBullet::new(
-                        self.player.position
-                    ));
-
-                    self.bullets.push(bullet);
-                }
-            }
-        }
-
-        let mut spent_bullet_indices = vec![];
-
-        for enemy in self.enemies.iter_mut() {
-            let hitbox = enemy.hitbox_rect();
-
-            let mut bullet_index = 0usize;
-            for bullet in self.bullets.iter() {
-                if let bullets::Bullet::Player(b) = bullet {
-                    if b.hitbox_rect().overlaps(&hitbox) {
-                        enemy.take_damage(b.damage());
-                        spent_bullet_indices.push(bullet_index);
-                    }
-                }
-                bullet_index += 1;
-            }
-
-            if enemy.health().empty() {
-                continue;
-            }
-
-            if let Some(bullet) = enemy.fire_bullet() {
-                self.bullets.push(bullet);
-            }
-        }
-
-        for bullet in self.bullets.iter_mut() {
-            bullet.reposition(time_since_last_tick);
-        }
-
-        // Cleanup after updating everything
-        self.input_queue = vec![];
-        self.cleanup_spent_bullets(spent_bullet_indices);
-        self.cleanup_out_of_bounds_bullets();
+        self.process_input_queue(time_since_last_tick);
         self.position_player_in_game_space();
+
+        let spent_bullet_indices = self.connect_bullets_with_enemies();
+        self.cleanup_defeated_enemies();
+        self.trigger_enemy_behaviours();
+        
+        self.cleanup_spent_bullets(spent_bullet_indices);
+        self.update_bullets(time_since_last_tick);
+        self.cleanup_out_of_bounds_bullets();
 
         self.last_tick_time = Utc::now();
 
