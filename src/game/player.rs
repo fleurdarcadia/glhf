@@ -23,13 +23,23 @@ pub struct Player {
     pub position: Position<units::Pixels>,
     pub dimensions: Dimensions<units::Pixels>,
 
-    movement_direction: Direction,
-    health: HealthPoints
+    horizontal_direction: Direction,
+    vertical_direction: Direction,
+
+    health: HealthPoints,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq)]
+pub enum KeyPress {
+    Pressed,
+    Released,
 }
 
 /// The various actions the player can take.
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub enum Action {
     Move(Direction),
+    StopMoving(Direction),
     Shoot,
 }
 
@@ -44,7 +54,8 @@ impl Player {
                 units::Pixels(24.0),
                 units::Pixels(32.0)
             ),
-            movement_direction: Direction::Stationary,
+            horizontal_direction: Direction::Stationary,
+            vertical_direction: Direction::Stationary,
             health: HealthPoints::new(250),
         }
     }
@@ -72,8 +83,24 @@ impl Player {
     /// Reposition the player in some direction.
     /// The player's velocity is an inherent characteristic, however the time since
     /// the last tick must be taken into account to compute distance.
-    pub fn reposition(&mut self, dir: Direction, time: Duration) {
-        self.movement_direction = dir;
+    pub fn reposition(&mut self, action: Action, time: Duration) {
+        match action {
+            Action::Move(dir) => {
+                if dir.is_horizontal() {
+                    self.horizontal_direction = dir;
+                } else if dir.is_vertical() {
+                    self.vertical_direction = dir;
+                }
+            },
+            Action::StopMoving(dir) => {
+                if dir.is_horizontal() {
+                    self.horizontal_direction = Direction::Stationary;
+                } else if dir.is_vertical() {
+                    self.vertical_direction = Direction::Stationary;
+                }
+            },
+            _ => {},
+        }
 
         let dx = self.horizontal_velocity(time).distance(time).0;
         let dy = self.vertical_velocity(time).distance(time).0;
@@ -112,7 +139,7 @@ impl Health for Player {
 
 impl Acceleration<units::PixelsPerMs> for Player {
     fn horizontal_velocity(&self, time: Duration) -> Velocity<units::PixelsPerMs> {
-        match self.movement_direction {
+        match self.horizontal_direction {
             Direction::Right => Velocity::new(0.5),
             Direction::Left  => Velocity::new(-0.5),
             _                => Velocity::new(0.0),
@@ -120,7 +147,7 @@ impl Acceleration<units::PixelsPerMs> for Player {
     }
     
     fn vertical_velocity(&self, time: Duration) -> Velocity<units::PixelsPerMs> {
-        match self.movement_direction {
+        match self.vertical_direction {
             Direction::Down => Velocity::new(0.5),
             Direction::Up   => Velocity::new(-0.5),
             _               => Velocity::new(0.0),
@@ -129,12 +156,18 @@ impl Acceleration<units::PixelsPerMs> for Player {
 }
 
 impl Action {
-    pub fn from_key_code(key_code: KeyCode) -> Option<Self> {
+    pub fn from_key_code(key_code: KeyCode, key: KeyPress) -> Option<Self> {
+        let action = if key == KeyPress::Released {
+            Action::StopMoving
+        } else {
+            Action::Move
+        };
+
         match key_code {
-            KeyCode::Up    => Some(Action::Move(Direction::Up)),
-            KeyCode::Down  => Some(Action::Move(Direction::Down)),
-            KeyCode::Left  => Some(Action::Move(Direction::Left)),
-            KeyCode::Right => Some(Action::Move(Direction::Right)),
+            KeyCode::Up    => Some(action(Direction::Up)),
+            KeyCode::Down  => Some(action(Direction::Down)),
+            KeyCode::Left  => Some(action(Direction::Left)),
+            KeyCode::Right => Some(action(Direction::Right)),
             KeyCode::Space => Some(Action::Shoot),
             _              => None,
         }

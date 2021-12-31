@@ -78,10 +78,6 @@ impl State {
     pub fn process_input_queue(&mut self, time_since_last_tick: Duration) {
         for input in self.input_queue.iter() {
             match input {
-                player::Action::Move(direction) => {
-                    self.player.reposition(*direction, time_since_last_tick);
-                }
-
                 player::Action::Shoot => {
                     let bullet = bullets::Bullet::new(
                         bullets::Owner::Player,
@@ -90,7 +86,9 @@ impl State {
                     );
 
                     self.bullets.push(bullet);
-                }
+                },
+
+                mvmt@_ => self.player.reposition(*mvmt, time_since_last_tick),
             }
         }
 
@@ -271,7 +269,7 @@ impl EventHandler<GameError> for State {
         _key_mods: KeyMods,
         _repeat: bool
     ) {
-        if let Some(action) = player::Action::from_key_code(key_code) {
+        if let Some(action) = player::Action::from_key_code(key_code, player::KeyPress::Pressed) {
             self.input_queue.push(action);
         }
     }

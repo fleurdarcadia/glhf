@@ -41,6 +41,16 @@ pub trait Acceleration<U> {
     fn vertical_velocity(&self, time: Duration) -> Velocity<U>;
 }
 
+impl Direction {
+    pub fn is_horizontal(&self) -> bool {
+        *self == Direction::Left || *self == Direction::Right
+    }
+
+    pub fn is_vertical(&self) -> bool {
+        *self == Direction::Down || *self == Direction::Up
+    }
+}
+
 impl<U: Copy> Velocity<U> {
     pub fn new(value: f32) -> Self {
         Velocity(value, PhantomData)
